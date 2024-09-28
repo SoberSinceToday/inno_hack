@@ -1,0 +1,5 @@
+nltk==3.9.1
+numpy==1.26.4
+pandas==2.2.1
+clickhouse-connect==0.8.0
+RapidFuzz==3.10.0
