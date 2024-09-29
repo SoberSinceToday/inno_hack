@@ -70,9 +70,9 @@ for i1, raw1 in repeated_values_df1.iterrows():
     first_arr_els = [raw1['uid']]
     sec_arr_els = []
     for i2, raw2 in repeated_values_df1.iterrows():
-        if raw1['address'] == raw2['address']:
+        if raw1['address'] == raw2['address'] and i1 != i2:
             first_arr_els.append(raw2['uid'])
-    for i2, raw2 in repeated_values_df2.iterrows():
+    for i2, raw2 in repeated_values_df2.iterrows() and i1 != i2:
         if raw1['address'] == raw2['address']:
             sec_arr_els.append(raw2['uid'])
     new_row_df = pd.DataFrame([{'id_is1': first_arr_els, 'id_is2': sec_arr_els, 'id_is3': []}])
