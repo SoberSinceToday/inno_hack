@@ -6,6 +6,7 @@ from rapidfuzz import fuzz
 from urllib3.exceptions import ProtocolError
 from http.client import IncompleteRead
 import time
+import gc
 
 def phone_convert(phone_number: str) -> str:
     res = ''
@@ -117,6 +118,7 @@ for row in df3.itertuples():
 df3['email'] = email_list
 df3['name'] = df3['name'].astype(str).apply(lambda x: x.lower())
 
+gc.collect()
 combined_df = pd.concat([df1, df2])
 value_counts = combined_df['phone'].value_counts()
 duplicates = value_counts[value_counts > 1].index.tolist()
@@ -143,6 +145,32 @@ for i1, raw1 in repeated_values_df1.iterrows():
     new_row_df = pd.DataFrame([{'id_is1': first_arr_els, 'id_is2': sec_arr_els, 'id_is3': []}])
     res = pd.concat([res, new_row_df], ignore_index=True)
     if len(res) > 10:
+        break
+gc.collect()
+
+repeated_values_df3 = df3.loc[df3['email'].isin(duplicates)]
+repeated_values_df3 = repeated_values_df3[['uid', 'email']]
+grouped_df = repeated_values_df3.groupby('email')['uid'].apply(list).reset_index()
+value_counts = df3['email'].value_counts()
+duplicates = value_counts[value_counts > 1].index.tolist()
+repeated_values_df1 = df1.loc[df1['email'].isin(duplicates)]
+repeated_values_df3 = df3.loc[df3['email'].isin(duplicates)]
+repeated_values_df1 = repeated_values_df1[['uid', 'email']]
+repeated_values_df3 = repeated_values_df3[['uid', 'email']]
+repeated_values_df3.head()
+for i1, raw1 in repeated_values_df1.iterrows():
+    first_arr_els = [raw1['uid']]
+    sec_arr_els = []
+    for i2, raw2 in repeated_values_df1.iterrows():
+        if raw1['email'] == raw2['email'] and i1 != i2:
+            first_arr_els.append(raw2['uid'])
+    for i2, raw2 in repeated_values_df3.iterrows():
+        if raw1['email'] == raw2['email'] and i1 != i2:
+            sec_arr_els.append(raw2['uid'])
+    new_row_df = pd.DataFrame([{'id_is1': first_arr_els, 'id_is2': [], 'id_is3': sec_arr_els}])
+    res = pd.concat([res, new_row_df], ignore_index=True) 
+    print(res)
+    if len(res) > 20:
         break
 
 print(f"Данные обработаны за {round(time.perf_counter()-start_time,1)} секунд")
